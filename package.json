@@ -1,5 +1,5 @@
 {
-  "name": "",
+  "name": "Curso-graphql-node-api",
   "version": "",
   "scripts": {
     "dev": "npm run gulp && npm run nodemon",
