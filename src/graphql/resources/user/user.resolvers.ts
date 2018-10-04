@@ -3,7 +3,7 @@ import { DbConnection } from "../../../interfaces/DbConnectionInterface";
 import { UserInstance } from "../../../models/UserModel";
 import { Transaction } from "sequelize";
 
-export const userResolver = {
+export const userResolvers = {
 
     User: {
 
