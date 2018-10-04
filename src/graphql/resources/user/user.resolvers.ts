@@ -33,7 +33,7 @@ export const userResolvers = {
                 .catch(handlerError);
         },
 
-        user: (parseInt, { id }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
+        user: (parent, { id }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
             id = parseInt(id);
             return db.User
                 .findById(id)
@@ -48,14 +48,14 @@ export const userResolvers = {
 
     Mutation: {
 
-        createUser: (parseInt, { input }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
+        createUser: (parent, { input }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
             return db.sequelize.transaction((t: Transaction) => {
                 return db.User
                     .create(input, { transaction: t });
             }).catch(handlerError);
         },
 
-        updateUser: (parseInt, { id, input }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
+        updateUser: (parent, { id, input }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
             id = parseInt(id);
             return db.sequelize.transaction((t: Transaction) => {
                 return db.User
@@ -68,7 +68,7 @@ export const userResolvers = {
             }).catch(handlerError);
         },
 
-        updateUserPassword: (parseInt, { id, input }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
+        updateUserPassword: (parent, { id, input }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
             id = parseInt(id);
             return db.sequelize.transaction((t: Transaction) => {
                 return db.User
@@ -81,7 +81,7 @@ export const userResolvers = {
             }).catch(handlerError);
         },
 
-        deleteUser: (parseInt, { id }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
+        deleteUser: (parent, { id }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
             id = parseInt(id);
             return db.sequelize.transaction((t: Transaction) => {
                 return db.User

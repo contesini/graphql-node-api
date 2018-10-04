@@ -32,5 +32,6 @@ export default makeExecutableSchema({
         commentTypes,
         postTypes,
         userTypes
-    ]
+    ],
+    resolvers
 });

@@ -1,6 +1,5 @@
 const userTypes = `
 
-
     type User{
         id: ID!
         name: String!

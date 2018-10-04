@@ -70,7 +70,7 @@ export const postResolvers = {
             }).catch(handlerError);
         },
 
-        delete: (parent, { id }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
+        deletePost: (parent, { id }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
             id = parseInt(id);
             return db.sequelize.transaction((t: Transaction) => {
                 return db.Post
