@@ -41,7 +41,7 @@ export const userResolvers = {
             return db.User
                 .findById(id)
                 .then((user: UserInstance) => {
-                    throwError(!user, `User with id ${authUser.id} not found!`);
+                    throwError(!user, `User with id ${id} not found!`);
                     return user;
                 })
                 .catch(handlerError);
