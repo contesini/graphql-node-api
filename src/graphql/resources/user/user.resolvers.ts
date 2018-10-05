@@ -2,10 +2,10 @@ import { GraphQLResolveInfo } from "graphql";
 import { DbConnection } from "../../../interfaces/DbConnectionInterface";
 import { UserInstance } from "../../../models/UserModel";
 import { Transaction } from "sequelize";
-import { handlerError } from "../../../utils/utils";
+import { handlerError, throwError } from "../../../utils/utils";
 import { compose } from "../../composable/composable.resolver";
-import { authResolver } from "../../composable/auth.resolver";
-import { verifyTokenResolver } from "../../composable/verify-token.resolver";
+import { authResolver, authResolvers } from "../../composable/auth.resolver";
+import { AuthUser } from "../../../interfaces/AuthUserInterface";
 
 export const userResolvers = {
 
@@ -27,14 +27,14 @@ export const userResolvers = {
 
     Query: {
 
-        users: compose(authResolver, verifyTokenResolver)((parent, { first = 10, offset = 0 }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
+        users: (parent, { first = 10, offset = 0 }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
             return db.User
                 .findAll({
                     limit: first,
                     offset: offset
                 })
                 .catch(handlerError);
-        }),
+        },
 
         user: (parent, { id }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
             id = parseInt(id);
@@ -58,39 +58,36 @@ export const userResolvers = {
             }).catch(handlerError);
         },
 
-        updateUser: (parent, { id, input }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
-            id = parseInt(id);
+        updateUser: compose(...authResolvers)((parent, { input }, { db, authUser }: { db: DbConnection, authUser: AuthUser }, info: GraphQLResolveInfo) => {
             return db.sequelize.transaction((t: Transaction) => {
                 return db.User
-                    .findById(id)
+                    .findById(authUser.id)
                     .then((user: UserInstance) => {
-                        if (!user) throw new Error(`User with id ${id} not found!`)
+                        throwError(!user, `User with id ${authUser.id} not found!`);
 
                         return user.update(input, { transaction: t });
                     })
             }).catch(handlerError);
-        },
+        }),
 
-        updateUserPassword: (parent, { id, input }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
-            id = parseInt(id);
+        updateUserPassword: compose(...authResolvers)((parent, { input }, { db, authUser }: { db: DbConnection, authUser: AuthUser }, info: GraphQLResolveInfo) => {
             return db.sequelize.transaction((t: Transaction) => {
                 return db.User
-                    .findById(id)
+                    .findById(authUser.id)
                     .then((user: UserInstance) => {
-                        if (!user) throw new Error(`User with id ${id} not found!`)
+                        throwError(!user, `User with id ${authUser.id} not found!`)
                         return user.update(input, { transaction: t })
                             .then((user: UserInstance) => !!user);
                     })
             }).catch(handlerError);
-        },
+        }),
 
-        deleteUser: (parent, { id }, { db }: { db: DbConnection }, info: GraphQLResolveInfo) => {
-            id = parseInt(id);
+        deleteUser: compose(...authResolvers)((parent, args, { db, authUser }: { db: DbConnection, authUser: AuthUser }, info: GraphQLResolveInfo) => {
             return db.sequelize.transaction((t: Transaction) => {
                 return db.User
-                    .findById(id)
+                    .findById(authUser.id)
                     .then((user: UserInstance) => {
-                        if (!user) throw new Error(`User with id ${id} not found!`)
+                       throwError(!user, `User with id ${authUser.id} not found!`)
 
                         return user.destroy({ transaction: t })
                             .then((user) => !!user);
