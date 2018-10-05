@@ -41,11 +41,20 @@ export const userResolvers = {
             return db.User
                 .findById(id)
                 .then((user: UserInstance) => {
-                    if (!user) throw new Error(`User with id ${id} not found!`)
+                    throwError(!user, `User with id ${authUser.id} not found!`);
                     return user;
                 })
                 .catch(handlerError);
-        }
+        },
+
+        currentUser: compose(...authResolvers)((parent, args, { db, authUser }: { db: DbConnection, authUser: AuthUser }, info: GraphQLResolveInfo) => {
+            return db.User
+                .findById(authUser.id)
+                .then((user: UserInstance) => {
+                    throwError(!user, `User with id ${authUser.id} not found!`);
+                    return user;
+                }).catch(handlerError);
+        })
 
     },
 
@@ -87,13 +96,13 @@ export const userResolvers = {
                 return db.User
                     .findById(authUser.id)
                     .then((user: UserInstance) => {
-                       throwError(!user, `User with id ${authUser.id} not found!`)
+                        throwError(!user, `User with id ${authUser.id} not found!`)
 
                         return user.destroy({ transaction: t })
                             .then((user) => !!user);
                     })
             }).catch(handlerError);
-        }
+        }),
 
     }
 
