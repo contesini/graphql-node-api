@@ -6,20 +6,21 @@ import { handlerError, throwError } from "../../../utils/utils";
 import { compose } from "../../composable/composable.resolver";
 import { authResolvers } from "../../composable/auth.resolver";
 import { AuthUser } from "../../../interfaces/AuthUserInterface";
+import { DataLoaders } from "../../../interfaces/DataLoadersInterface";
 
 export const commentResolvers = {
 
     Comment: {
 
-        user: (comment, args, {db}: {db: DbConnection}, info: GraphQLResolveInfo) => {
-            return db.User
-                .findById(comment.get('user'))
-                .catch(handlerError);
+        user: (comment, args, {db, dataloaders: {userLoader}}: {db: DbConnection, dataloaders: DataLoaders}, info: GraphQLResolveInfo) => {
+            return userLoader
+            .load(comment.get('user'))
+            .catch(handlerError);
         },
 
-        post: (post, args, {db}: {db: DbConnection}, info: GraphQLResolveInfo) => {
-            return db.Post
-                .findById(post.get('post'))
+        post: (comment, args, {db, dataloaders: {postLoader}}: {db: DbConnection, dataloaders: DataLoaders}, info: GraphQLResolveInfo) => {
+            return postLoader
+                .load(comment.get('post'))
                 .catch(handlerError);
         }
 
