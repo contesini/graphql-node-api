@@ -6,7 +6,7 @@ export class PostLoader {
         return Promise.resolve(
             Post.findAll({
                 where: { id: { $in: ids } }
-            });
+            })
         )
     }
 }
