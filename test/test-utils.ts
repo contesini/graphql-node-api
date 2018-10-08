@@ -1,11 +1,11 @@
+import 'chai-http';
 import * as chai from 'chai';
-const chaiHttp = require('chai-http');
+chai.use(require('chai-http'));
+
+import * as mocha from 'mocha';
 
 import app from './../src/app';
 import db from './../src/models';
-
-
-chai.use(chaiHttp)
 
 const expect = chai.expect;
 
@@ -18,6 +18,7 @@ export {
     app,
     db,
     chai,
+    mocha,
     expect,
     handleError
 }

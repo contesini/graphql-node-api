@@ -4,7 +4,7 @@
             "esnext"
         ],
         "target": "es6",
-        "module": "commonjs",
+        "module": "commonjs"
     },
     "compileOnSave": false,
     "include": [
