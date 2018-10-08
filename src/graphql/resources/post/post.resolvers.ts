@@ -14,9 +14,9 @@ export const postResolvers = {
 
     Post: {
 
-        author: (post, { id }, { db, dataloaders: {userLoader}}: { db: DbConnection, dataloaders: DataLoaders }, info: GraphQLResolveInfo) => {
+        author: (post, { id }, { db, dataloaders: { userLoader } }: { db: DbConnection, dataloaders: DataLoaders }, info: GraphQLResolveInfo) => {
             return userLoader
-                .load(post.get('author'))
+                .load({ key: post.get('author'), info })
                 .catch(handlerError);
         },
 
@@ -39,16 +39,16 @@ export const postResolvers = {
             return context.db.Post.findAll({
                 limit: first,
                 offset: offset,
-                attributes: context.requestedFields.getField(info, {keep: ['id'], exclude: ['comments']})
+                attributes: context.requestedFields.getField(info, { keep: ['id'], exclude: ['comments'] })
             })
-            .catch(handlerError);
+                .catch(handlerError);
         },
 
         post: (parent, { id }, context: ResolverContext, info: GraphQLResolveInfo) => {
             id = parseInt(id);
             return context.db.Post.
                 findById(id, {
-                    attributes: context.requestedFields.getField(info, {keep: ['id'], exclude: ['comments']})
+                    attributes: context.requestedFields.getField(info, { keep: ['id'], exclude: ['comments'] })
                 })
                 .then((post: PostInstance) => {
                     throwError(!post, `Post with id ${id} not found!`);
@@ -91,8 +91,8 @@ export const postResolvers = {
                     .then((post: PostInstance) => {
                         throwError(!post, `Post with id ${id} not found!`);
                         throwError(post.get('author') !== authUser.id, `UnauthoreizedYou can only edit posts by yourself!`)
-                        return post.destroy({transaction: t})
-                            .then(post => !! post);
+                        return post.destroy({ transaction: t })
+                            .then(post => !!post);
                     })
             }).catch(handlerError);
         }),

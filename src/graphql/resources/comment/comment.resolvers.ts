@@ -13,15 +13,15 @@ export const commentResolvers = {
 
     Comment: {
 
-        user: (comment, args, {db, dataloaders: {userLoader}}: {db: DbConnection, dataloaders: DataLoaders}, info: GraphQLResolveInfo) => {
+        user: (comment, args, { db, dataloaders: { userLoader } }: { db: DbConnection, dataloaders: DataLoaders }, info: GraphQLResolveInfo) => {
             return userLoader
-            .load(comment.get('user'))
-            .catch(handlerError);
+                .load({ key: comment.get('user'), info })
+                .catch(handlerError);
         },
 
-        post: (comment, args, {db, dataloaders: {postLoader}}: {db: DbConnection, dataloaders: DataLoaders}, info: GraphQLResolveInfo) => {
+        post: (comment, args, { db, dataloaders: { postLoader } }: { db: DbConnection, dataloaders: DataLoaders }, info: GraphQLResolveInfo) => {
             return postLoader
-                .load(comment.get('post'))
+                .load({ key: comment.get('post'), info })
                 .catch(handlerError);
         }
 
@@ -29,11 +29,11 @@ export const commentResolvers = {
 
     Query: {
 
-        commentsByPost: (parent, {postId, first = 10, offset=0}, context: ResolverContext, info: GraphQLResolveInfo) => {
+        commentsByPost: (parent, { postId, first = 10, offset = 0 }, context: ResolverContext, info: GraphQLResolveInfo) => {
             postId = parseInt(postId)
             return context.db.Comment
                 .findAll({
-                    where: {post: postId},
+                    where: { post: postId },
                     limit: first,
                     offset: offset,
                     attributes: context.requestedFields.getField(info)
@@ -43,16 +43,16 @@ export const commentResolvers = {
     },
 
     Mutation: {
-        
-        createComment: compose(...authResolvers)((parent, {input}, {db, authUser}: {db: DbConnection, authUser: AuthUser}, info: GraphQLResolveInfo) => {
+
+        createComment: compose(...authResolvers)((parent, { input }, { db, authUser }: { db: DbConnection, authUser: AuthUser }, info: GraphQLResolveInfo) => {
             input.user = authUser.id;
             return db.sequelize.transaction((t: Transaction) => {
                 return db.Comment
-                    .create(input, {transaction: t})
+                    .create(input, { transaction: t })
             }).catch(handlerError);;
         }),
 
-        updateComment: compose(...authResolvers)((parent, {id, input}, {db, authUser}: {db: DbConnection, authUser: AuthUser}, info: GraphQLResolveInfo) => {
+        updateComment: compose(...authResolvers)((parent, { id, input }, { db, authUser }: { db: DbConnection, authUser: AuthUser }, info: GraphQLResolveInfo) => {
             input.user = authUser.id;
             return db.sequelize.transaction((t: Transaction) => {
                 return db.Comment
@@ -61,12 +61,12 @@ export const commentResolvers = {
                         throwError(!comment, `Comment with id ${id} not found!`);
                         throwError(comment.get('user') != authUser.id, `Unauthorized! You can only edit comments by yourself!`)
                         input.user = authUser.id;
-                        return comment.update(input, {transaction: t})
+                        return comment.update(input, { transaction: t })
                     })
             }).catch(handlerError);;
         }),
 
-        deleteComment: compose(...authResolvers)((parent, {id}, {db, authUser}: {db: DbConnection, authUser: AuthUser}, info: GraphQLResolveInfo) => {
+        deleteComment: compose(...authResolvers)((parent, { id }, { db, authUser }: { db: DbConnection, authUser: AuthUser }, info: GraphQLResolveInfo) => {
             id = parseInt(id);
             return db.sequelize.transaction((t: Transaction) => {
                 return db.Comment
@@ -74,7 +74,7 @@ export const commentResolvers = {
                     .then((comment: CommentInstance) => {
                         throwError(!comment, `Comment with id ${id} not found!`);
                         throwError(comment.get('user') != authUser.id, `Unauthorized! You can only delete comments by yourself!`)
-                        return comment.destroy({transaction: t})
+                        return comment.destroy({ transaction: t })
                             .then(comment => !!comment);
                     })
             }).catch(handlerError);;
