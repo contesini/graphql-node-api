@@ -58,7 +58,7 @@ describe('Comment', () => {
                         user: userId,
                         post: postId
                     },
-                    
+
                 ])
             }).then((comments: CommentInstance[]) => {
                 commentId = comments[0].get('id');
@@ -85,7 +85,7 @@ describe('Comment', () => {
                                     }
                                 }
                             }
-                        `, 
+                        `,
                         variables: {
                             postId: postId,
                             first: 2,
@@ -111,6 +111,133 @@ describe('Comment', () => {
             })
         })
 
-    })
+    });
 
-})
+    describe('Mutations', () => {
+
+        describe('application/json', () => {
+
+            describe('createComment', () => {
+
+                it('should create a new Comment', () => {
+                    let body = {
+                        query: `
+                            mutation createNewComment($input: CommentInput!){
+                                createComment(input: $input){
+                                    comment
+                                    user {
+                                        id
+                                        name
+                                    }
+                                    post {
+                                        id
+                                        title
+                                    }
+                                }
+                            }
+                        `,
+                        variables: {
+                            input: {
+                                comment: 'First comment',
+                                post: postId
+                            }
+                        }
+                    };
+
+                    return chai.request(app)
+                        .post('/graphql')
+                        .set('content-type', 'application/json')
+                        .set('authorization', `Bearer ${token}`)
+                        .send(JSON.stringify(body))
+                        .then(res => {
+                            const createdComment = res.body.data.createComment;
+                            expect(res.body.data).to.be.an('object')
+                            expect(res.body.data).to.have.key('createComment')
+                            expect(createdComment).to.be.an('object');
+                            expect(createdComment).to.have.keys(['comment', 'post', 'user']);
+                            expect(parseInt(createdComment.user.id)).to.equal(userId);
+                            expect(createdComment.user.name).to.equal('Peter Quill');
+                            expect(parseInt(createdComment.post.id)).to.equal(postId);
+                            expect(createdComment.post.title).to.equal('First post');
+                        }).catch(handleError)
+                });
+
+            });
+
+            describe('updateComment', () => {
+
+                it('should update a new Comment', () => {
+                    let body = {
+                        query: `
+                            mutation updateExistingComment($id: ID!, $input: CommentInput!){
+                                updateComment(id: $id, input: $input){
+                                    id
+                                    comment
+                                }
+                            }
+                        `,
+                        variables: {
+                            id: commentId,
+                            input: {
+                                comment: 'Comment changed',
+                                post: postId
+                            }
+                        }
+                    };
+
+                    return chai.request(app)
+                        .post('/graphql')
+                        .set('content-type', 'application/json')
+                        .set('authorization', `Bearer ${token}`)
+                        .send(JSON.stringify(body))
+                        .then(res => {
+                            const updateComment = res.body.data.updateComment;
+                            expect(res.body.data).to.be.an('object')
+                            expect(res.body.data).to.have.key('updateComment')
+                            expect(updateComment).to.be.an('object');
+                            expect(updateComment).to.have.have.keys(['id', 'comment']);
+                            expect(updateComment.comment).to.equal('Comment changed');
+                        }).catch(handleError)
+                });
+
+            });
+
+            describe('deleteComment', () => {
+
+                it('should delete an existing Comment', () => {
+                    let body = {
+                        query: `
+                            mutation deleteExistingComment($id: ID!){
+                                deleteComment(id: $id)
+                            }
+                        `,
+                        variables: {
+                            id: commentId,
+                            input: {
+                                comment: 'Comment changed',
+                                post: postId
+                            }
+                        }
+                    };
+
+                    return chai.request(app)
+                        .post('/graphql')
+                        .set('content-type', 'application/json')
+                        .set('authorization', `Bearer ${token}`)
+                        .send(JSON.stringify(body))
+                        .then(res => {
+                            const deleteComment = res.body.data.deleteComment;
+                            expect(res.body.data).to.be.an('object')
+                            expect(res.body.data).to.have.key('deleteComment')
+                            expect(deleteComment).to.be.true;
+                        }).catch(handleError)
+                });
+
+            });
+
+
+        });
+
+    });
+
+});
